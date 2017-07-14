@@ -31,3 +31,18 @@ A WiFi, NTP controlled "domino" clock with an ESP8266 dev mod running NodeMCU/Lu
   * upload software, e.g. `luatool`
 
 ## Caveat: Work in progress!
+
+### Display example
+
+```
+     # #
+ #      
+     # #
+        
+        
+#    ###
+ #   # #
+  #  ###
+```
+
+(14:38)
