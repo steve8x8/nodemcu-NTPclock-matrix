@@ -13,12 +13,12 @@ local function sntpsync()
     function(sec, usec, server, info) -- success callback
       print("SNTP success")
       print("server " .. server)
-      max7219.write({0x3c, 0x42, 0x3c, 0x00, 0x7e, 0x28, 0x44, 0x02}) -- OK
+      max7219.write({{0x3c, 0x42, 0x3c, 0x00, 0x7e, 0x28, 0x44, 0x02}}) -- OK
     end,
     function(errno, errstr) -- error callback
       print("SNTP failure")
       print("error " .. tostring(errno) .. ": " .. tostring(errstr))
-      max7219.write({0x7e, 0x30, 0x0c, 0x7e, 0x00, 0x3c, 0x42, 0x3c}) -- NO
+      max7219.write({{0x7e, 0x30, 0x0c, 0x7e, 0x00, 0x3c, 0x42, 0x3c}}) -- NO
     end)
 end
 
@@ -40,10 +40,10 @@ if payload_started == nil then
     if (sec ~= 0) then
       -- convert into readable
       local tm = rtctime.epoch2cal(sec + UTC_OFFSET)
-      local ul = domino3.getDomino(tm["hour"]/10)
-      local ur = domino3.getDomino(tm["hour"]%10)
-      local bl = domino3.getDomino(tm["min"]/10)
-      local br = domino3.getDomino(tm["min"]%10)
+      local ul = domino3.getDomino(tm["hour"] / 10)
+      local ur = domino3.getDomino(tm["hour"] % 10)
+      local bl = domino3.getDomino(tm["min"]  / 10)
+      local br = domino3.getDomino(tm["min"]  % 10)
       -- merge into matrix
       local matrix = {0, 0, 0, 0, 0, 0, 0, 0}
       for i = 1, 3 do
@@ -63,7 +63,12 @@ if payload_started == nil then
         end
       end
       -- set more bits???
-      max7219.write(matrix)
+      -- blink second
+      if tm["sec"] % 2 == 0 then
+        matrix[4] = bit.set(matrix[4], 4 - 1, 5 - 1)
+        matrix[5] = bit.set(matrix[5], 4 - 1, 5 - 1)
+      end
+      max7219.write({matrix})
     end
   end)
 end
@@ -74,7 +79,7 @@ wificonnect(function()
   print("Wifi connect callback")
   if (wifi.sta.status() ~= 5) then
     print("no WiFi, status " .. wifi.sta.status())
-    max7219.write7segment("No netwk")
+    max7219.write({{0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80}})
   else
     -- if using MPIGUEST, authenticate first
     local apinfo = wifi.sta.getapinfo()
@@ -91,7 +96,7 @@ wificonnect(function()
     -- set clock to continue
     tmr.create():alarm(5000, tmr.ALARM_SINGLE, function()
       print("Initial SNTP")
-      max7219.write7segment("SNTP ---")
+      max7219.write({{0x00, 0x00, 0x02, 0x01, 0xb1, 0x09, 0x06, 0x00}})
       sntpsync()
     end)
   end
