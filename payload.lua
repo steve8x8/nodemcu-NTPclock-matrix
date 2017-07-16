@@ -48,25 +48,38 @@ if payload_started == nil then
       local matrix = {0, 0, 0, 0, 0, 0, 0, 0}
       for i = 1, 3 do
         for j= 1, 3 do
+          -- upper left corner
           if ul[i][j] ~= 0 then
             matrix[i] = bit.set(matrix[i], j - 1)
           end
+          -- upper right corner
           if ur[i][j] ~= 0 then
             matrix[i + 5] = bit.set(matrix[i + 5], j - 1)
           end
+          -- bottom left corner
           if bl[i][j] ~= 0 then
             matrix[i] = bit.set(matrix[i], j - 1 + 5)
           end
+          -- bottom right corner
           if br[i][j] ~= 0 then
-            matrix[i + 5] = bit.set(matrix[i + 5], j -1 + 5)
+            matrix[i + 5] = bit.set(matrix[i + 5], j - 1 + 5)
           end
         end
       end
       -- set more bits???
-      -- blink second
-      if tm["sec"] % 2 == 0 then
-        matrix[4] = bit.set(matrix[4], 4 - 1, 5 - 1)
-        matrix[5] = bit.set(matrix[5], 4 - 1, 5 - 1)
+      -- blink center for seconds
+      local sec5 = tm["sec"] % 5
+      if sec5 == 1 or sec5 == 0 then
+        matrix[5] = bit.set(matrix[5], 4 - 1)
+      end
+      if sec5 == 2 or sec5 == 0 then
+        matrix[5] = bit.set(matrix[5], 5 - 1)
+      end
+      if sec5 == 3 or sec5 == 0 then
+        matrix[4] = bit.set(matrix[4], 5 - 1)
+      end
+      if sec5 == 4 or sec5 == 0 then
+        matrix[4] = bit.set(matrix[4], 4 - 1)
       end
       max7219.write({matrix})
     end
